@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>ANATOLY XAUUSD CHECKLIST</title>
+  <title>ANATOLY CHECK</title>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <style>
     body {
@@ -33,7 +33,7 @@
     }
     button {
       background-color: #ffffff;
-      color: #103910 ;
+      color: #103910;
       margin-top: -30px;
       margin-left: 72%;
       padding: 10px 20px;
@@ -43,19 +43,24 @@
       position: absolute;
       border-radius: 10px;
     }
+    .timestamp {
+      margin-left: 10px;
+      font-size: 14px;
+      color: #cccccc;
+    }
   </style>
 </head>
 <body>
-  <h1>ANATOLY XAUUSD CHECKLIST</h1>
+  <h1 id="mainTitle">ANATOLY XAUUSD <span id="datetime"></span></h1>
 
   <div class="section">
     <h2>BIAIS</h2>
-    <label><input type="checkbox" id="marketSentiment" onchange="toggleSubOptions('marketSentimentOptions')"> Market Sentiment</label>
+    <label><input type="checkbox" id="marketSentiment" onchange="toggleSubOptions('marketSentimentOptions', 'marketSentiment')"> Market Sentiment</label>
     <div id="marketSentimentOptions" style="display:none; margin-left:20px">
       <label><input type="radio" name="marketSentimentDir" value="Haussier"> Haussier</label>
       <label><input type="radio" name="marketSentimentDir" value="Baissier"> Baissier</label>
     </div>
-    <label><input type="checkbox" id="biaisGlobal" onchange="toggleSubOptions('biaisGlobalOptions')"> Biais Global</label>
+    <label><input type="checkbox" id="biaisGlobal" onchange="toggleSubOptions('biaisGlobalOptions', 'biaisGlobal')"> Biais Global</label>
     <div id="biaisGlobalOptions" style="display:none; margin-left:20px">
       <label><input type="radio" name="biaisGlobalDir" value="Haussier"> Haussier</label>
       <label><input type="radio" name="biaisGlobalDir" value="Baissier"> Baissier</label>
@@ -64,12 +69,12 @@
 
   <div class="section">
     <h2>NIVEAU</h2>
-    <label><input type="checkbox" id="wyckoff" onchange="toggleSubOptions('wyckoffOptions')"> Wyckoff</label>
+    <label><input type="checkbox" id="wyckoff" onchange="toggleSubOptions('wyckoffOptions', 'wyckoff')"> Wyckoff</label>
     <div id="wyckoffOptions" style="display:none; margin-left:20px">
       <label><input type="radio" name="wyckoffDir" value="Buy"> Buy</label>
       <label><input type="radio" name="wyckoffDir" value="Sell"> Sell</label>
     </div>
-    <label><input type="checkbox" id="trap" onchange="toggleSubOptions('trapOptions')"> Trap</label>
+    <label><input type="checkbox" id="trap" onchange="toggleSubOptions('trapOptions', 'trap')"> Trap</label>
     <div id="trapOptions" style="display:none; margin-left:20px">
       <label><input type="radio" name="trapTF" value="M5"> M5</label>
       <label><input type="radio" name="trapTF" value="M15"> M15</label>
@@ -78,22 +83,61 @@
 
   <div class="section">
     <h2>CONFIRMATION</h2>
-    <label><input type="checkbox" id="tv2"> TV2</label>
-    <label><input type="checkbox" id="agression"> AGRESSION</label>
-    <label><input type="checkbox" id="absorption"> ABSORPTION</label>
+    <label><input type="checkbox" id="tv2" onchange="handleSimpleCheck('tv2')"> TV2</label>
+    <label><input type="checkbox" id="agression" onchange="handleSimpleCheck('agression')"> AGRESSION</label>
+    <label><input type="checkbox" id="absorption" onchange="handleSimpleCheck('absorption')"> ABSORPTION</label>
   </div>
 
   <button onclick="generateChecklist()">Télécharger</button>
 
   <script>
-    function toggleSubOptions(id) {
+    const timestamps = {};
+
+    function updateDateTimeTitle() {
+      const now = new Date();
+      const jj = String(now.getDate()).padStart(2, '0');
+      const mm = String(now.getMonth() + 1).padStart(2, '0');
+      const aa = String(now.getFullYear()).slice(-2);
+      const hh = String(now.getHours()).padStart(2, '0');
+      const min = String(now.getMinutes()).padStart(2, '0');
+      const formatted = `${jj}/${mm}/${aa} ${hh}:${min}`;
+      document.getElementById('datetime').textContent = formatted;
+    }
+    setInterval(updateDateTimeTitle, 1000);
+
+    function toggleSubOptions(id, mainId) {
       const element = document.getElementById(id);
-      element.style.display = element.style.display === 'none' ? 'block' : 'none';
+      const checkbox = document.getElementById(mainId);
+      if (checkbox.checked) {
+        element.style.display = 'block';
+        timestamps[mainId] = new Date();
+      } else {
+        element.style.display = 'none';
+        delete timestamps[mainId];
+      }
+      updateTimestampLabel(mainId);
     }
 
-    function getTimeStamp() {
-      const now = new Date();
-      return now.toLocaleTimeString('fr-FR');
+    function handleSimpleCheck(id) {
+      const checkbox = document.getElementById(id);
+      if (checkbox.checked) {
+        timestamps[id] = new Date();
+      } else {
+        delete timestamps[id];
+      }
+      updateTimestampLabel(id);
+    }
+
+    function updateTimestampLabel(id) {
+      let label = document.querySelector(`input#${id}`).parentElement;
+      let existing = label.querySelector('.timestamp');
+      if (existing) existing.remove();
+      if (timestamps[id]) {
+        const span = document.createElement('span');
+        span.className = 'timestamp';
+        span.textContent = `(${timestamps[id].toLocaleTimeString('fr-FR')})`;
+        label.appendChild(span);
+      }
     }
 
     function getDateTimeString() {
@@ -109,27 +153,27 @@
       content += `BIAIS\n`;
       if (document.getElementById('marketSentiment').checked) {
         const ms = document.querySelector('input[name="marketSentimentDir"]:checked');
-        if (ms) content += `- Market Sentiment: ${ms.value} (${getTimeStamp()})\n`;
+        if (ms) content += `- Market Sentiment: ${ms.value} (${timestamps['marketSentiment']?.toLocaleTimeString('fr-FR')})\n`;
       }
       if (document.getElementById('biaisGlobal').checked) {
         const bg = document.querySelector('input[name="biaisGlobalDir"]:checked');
-        if (bg) content += `- Biais Global: ${bg.value} (${getTimeStamp()})\n`;
+        if (bg) content += `- Biais Global: ${bg.value} (${timestamps['biaisGlobal']?.toLocaleTimeString('fr-FR')})\n`;
       }
 
       content += `\nNIVEAU\n`;
       if (document.getElementById('wyckoff').checked) {
         const w = document.querySelector('input[name="wyckoffDir"]:checked');
-        if (w) content += `- Wyckoff: ${w.value} (${getTimeStamp()})\n`;
+        if (w) content += `- Wyckoff: ${w.value} (${timestamps['wyckoff']?.toLocaleTimeString('fr-FR')})\n`;
       }
       if (document.getElementById('trap').checked) {
         const t = document.querySelector('input[name="trapTF"]:checked');
-        if (t) content += `- Trap: ${t.value} (${getTimeStamp()})\n`;
+        if (t) content += `- Trap: ${t.value} (${timestamps['trap']?.toLocaleTimeString('fr-FR')})\n`;
       }
 
       content += `\nCONFIRMATION\n`;
-      if (document.getElementById('tv2').checked) content += `- TV2 (${getTimeStamp()})\n`;
-      if (document.getElementById('agression').checked) content += `- AGRESSION (${getTimeStamp()})\n`;
-      if (document.getElementById('absorption').checked) content += `- ABSORPTION (${getTimeStamp()})\n`;
+      if (document.getElementById('tv2').checked) content += `- TV2 (${timestamps['tv2']?.toLocaleTimeString('fr-FR')})\n`;
+      if (document.getElementById('agression').checked) content += `- AGRESSION (${timestamps['agression']?.toLocaleTimeString('fr-FR')})\n`;
+      if (document.getElementById('absorption').checked) content += `- ABSORPTION (${timestamps['absorption']?.toLocaleTimeString('fr-FR')})\n`;
 
       const filename = `XAUUSD-${getDateTimeString()}`;
       const blob = new Blob([content], { type: 'text/plain' });
@@ -140,7 +184,6 @@
       link.click();
       document.body.removeChild(link);
 
-      // Capture d'écran
       html2canvas(document.body).then(canvas => {
         const imageLink = document.createElement('a');
         imageLink.download = `${filename}.png`;
