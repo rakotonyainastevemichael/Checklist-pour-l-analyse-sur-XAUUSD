@@ -1,1 +1,146 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>ANATOLY CHECK</title>
+  <style>
+    body {
+      background-color: #103910;
+      color: white;
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      font-size: 36px;
+      text-transform: uppercase;
+    }
+    h2 {
+      font-size: 24px;
+      text-transform: uppercase;
+      margin-top: 30px;
+    }
+    .section {
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin: 10px 0;
+    }
+    input[type="checkbox"] {
+      margin-right: 10px;
+    }
+    button {
+      background-color: #ffffff;
+      color: #103910 ;
+      margin-top: -30px;
+      margin-left: 72%;
+      padding: 10px 20px;
+      font-size: 18px;
+      font-weight: bolder;
+      cursor: pointer;
+      position: fixed;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>ANATOLY CHECK</h1>
+
+  <div class="section">
+    <h2>BIAIS</h2>
+    <label><input type="checkbox" id="marketSentiment" onchange="toggleSubOptions('marketSentimentOptions')"> Market Sentiment</label>
+    <div id="marketSentimentOptions" style="display:none; margin-left:20px">
+      <label><input type="radio" name="marketSentimentDir" value="Haussier"> Haussier</label>
+      <label><input type="radio" name="marketSentimentDir" value="Baissier"> Baissier</label>
+    </div>
+    <label><input type="checkbox" id="biaisGlobal" onchange="toggleSubOptions('biaisGlobalOptions')"> Biais Global</label>
+    <div id="biaisGlobalOptions" style="display:none; margin-left:20px">
+      <label><input type="radio" name="biaisGlobalDir" value="Haussier"> Haussier</label>
+      <label><input type="radio" name="biaisGlobalDir" value="Baissier"> Baissier</label>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>NIVEAU</h2>
+    <label><input type="checkbox" id="wyckoff" onchange="toggleSubOptions('wyckoffOptions')"> Wyckoff</label>
+    <div id="wyckoffOptions" style="display:none; margin-left:20px">
+      <label><input type="radio" name="wyckoffDir" value="Buy"> Buy</label>
+      <label><input type="radio" name="wyckoffDir" value="Sell"> Sell</label>
+    </div>
+    <label><input type="checkbox" id="trap" onchange="toggleSubOptions('trapOptions')"> Trap</label>
+    <div id="trapOptions" style="display:none; margin-left:20px">
+      <label><input type="radio" name="trapTF" value="M5"> M5</label>
+      <label><input type="radio" name="trapTF" value="M15"> M15</label>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>CONFIRMATION</h2>
+    <label><input type="checkbox" id="tv2"> TV2</label>
+    <label><input type="checkbox" id="agression"> AGRESSION</label>
+    <label><input type="checkbox" id="absorption"> ABSORPTION</label>
+  </div>
+
+  <button onclick="generateChecklist()">Télécharger</button>
+
+  <script>
+    function toggleSubOptions(id) {
+      const element = document.getElementById(id);
+      element.style.display = element.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function getTimeStamp() {
+      const now = new Date();
+      return now.toLocaleTimeString('fr-FR');
+    }
+
+    function getDateTimeString() {
+      const now = new Date();
+      const date = now.toISOString().slice(0, 10);
+      const time = now.toTimeString().slice(0, 5).replace(":", "h");
+      return `${date}_${time}`;
+    }
+
+    function generateChecklist() {
+      const now = new Date();
+      let content = `XAUUSD\n\n`;
+
+      content += `BIAIS\n`;
+      if (document.getElementById('marketSentiment').checked) {
+        const ms = document.querySelector('input[name="marketSentimentDir"]:checked');
+        if (ms) content += `- Market Sentiment: ${ms.value} (${getTimeStamp()})\n`;
+      }
+      if (document.getElementById('biaisGlobal').checked) {
+        const bg = document.querySelector('input[name="biaisGlobalDir"]:checked');
+        if (bg) content += `- Biais Global: ${bg.value} (${getTimeStamp()})\n`;
+      }
+
+      content += `\nNIVEAU\n`;
+      if (document.getElementById('wyckoff').checked) {
+        const w = document.querySelector('input[name="wyckoffDir"]:checked');
+        if (w) content += `- Wyckoff: ${w.value} (${getTimeStamp()})\n`;
+      }
+      if (document.getElementById('trap').checked) {
+        const t = document.querySelector('input[name="trapTF"]:checked');
+        if (t) content += `- Trap: ${t.value} (${getTimeStamp()})\n`;
+      }
+
+      content += `\nCONFIRMATION\n`;
+      if (document.getElementById('tv2').checked) content += `- TV2 (${getTimeStamp()})\n`;
+      if (document.getElementById('agression').checked) content += `- AGRESSION (${getTimeStamp()})\n`;
+      if (document.getElementById('absorption').checked) content += `- ABSORPTION (${getTimeStamp()})\n`;
+
+      const filename = `XAUUSD-${getDateTimeString()}.txt`;
+      const blob = new Blob([content], { type: 'text/plain' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  </script>
+</body>
+</html>
 
